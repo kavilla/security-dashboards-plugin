@@ -30,7 +30,6 @@ import wreck from '@hapi/wreck';
 
 describe('start OpenSearch Dashboards server', () => {
   let root: Root;
-  let anonymousDisabledRoot: Root;
 
   beforeAll(async () => {
     root = osdTestServer.createRootWithSettings(
@@ -57,33 +56,6 @@ describe('start OpenSearch Dashboards server', () => {
         dev: true,
       }
     );
-
-    anonymousDisabledRoot = osdTestServer.createRootWithSettings(
-      {
-        plugins: {
-          scanDirs: [resolve(__dirname, '../..')],
-        },
-        opensearch: {
-          hosts: ['https://localhost:9200'],
-          ignoreVersionMismatch: true,
-          ssl: { verificationMode: 'none' },
-          username: OPENSEARCH_DASHBOARDS_SERVER_USER,
-          password: OPENSEARCH_DASHBOARDS_SERVER_PASSWORD,
-        },
-        opensearch_security: {
-          auth: {
-            anonymous_auth_enabled: false,
-          },
-        },
-      },
-      {
-        // to make ignoreVersionMismatch setting work
-        // can be removed when we have corresponding ES version
-        dev: true,
-      }
-    );
-    await anonymousDisabledRoot.setup();
-    await anonymousDisabledRoot.start();
 
     console.log('Starting OpenSearchDashboards server..');
     await root.setup();
@@ -123,7 +95,6 @@ describe('start OpenSearch Dashboards server', () => {
   afterAll(async () => {
     // shutdown OpenSearchDashboards server
     await root.shutdown();
-    await anonymousDisabledRoot.shutdown();
   });
 
   it('can access login page without credentials', async () => {
@@ -200,14 +171,6 @@ describe('start OpenSearch Dashboards server', () => {
     expect(response.status).toEqual(302);
   });
 
-  it('anonymous disabled', async () => {
-    const response = await osdTestServer.request
-      .get(anonymousDisabledRoot, '/auth/anonymous')
-      .unset(AUTHORIZATION_HEADER_NAME);
-
-    expect(response.status).toEqual(302);
-  });
-
   it('can access api/status route with admin credential', async () => {
     const response = await osdTestServer.request
       .get(root, '/api/status')
@@ -267,5 +230,51 @@ describe('start OpenSearch Dashboards server', () => {
       .unset(AUTHORIZATION_HEADER_NAME);
 
     expect(response3.status).toEqual(200);
+  });
+});
+
+describe('anonymous disabled OpenSearch Dashboards server', () => {
+  let anonymousDisabledRoot: Root;
+
+  beforeAll(async () => {
+    anonymousDisabledRoot = osdTestServer.createRootWithSettings(
+      {
+        plugins: {
+          scanDirs: [resolve(__dirname, '../..')],
+        },
+        opensearch: {
+          hosts: ['https://localhost:9200'],
+          ignoreVersionMismatch: true,
+          ssl: { verificationMode: 'none' },
+          username: OPENSEARCH_DASHBOARDS_SERVER_USER,
+          password: OPENSEARCH_DASHBOARDS_SERVER_PASSWORD,
+        },
+        opensearch_security: {
+          auth: {
+            anonymous_auth_enabled: false,
+          },
+        },
+      },
+      {
+        // to make ignoreVersionMismatch setting work
+        // can be removed when we have corresponding ES version
+        dev: true,
+      }
+    );
+    await anonymousDisabledRoot.setup();
+    await anonymousDisabledRoot.start();
+  });
+
+  it('anonymous disabled', async () => {
+    const response = await osdTestServer.request
+      .get(anonymousDisabledRoot, '/auth/anonymous')
+      .unset(AUTHORIZATION_HEADER_NAME);
+
+    expect(response.status).toEqual(302);
+  });
+
+  afterAll(async () => {
+    // shutdown OpenSearchDashboards server
+    await anonymousDisabledRoot.shutdown();
   });
 });
