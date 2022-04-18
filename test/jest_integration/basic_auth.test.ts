@@ -216,6 +216,10 @@ describe('start OpenSearch Dashboards server', () => {
   });
 
   it('redirect for home follows login', async () => {
+    const logout = await osdTestServer.request
+      .post(root, '/auth/logout')
+      .unset(AUTHORIZATION_HEADER_NAME);
+
     const response = await osdTestServer.request
       .get(root, '/app/home#/')
       .unset(AUTHORIZATION_HEADER_NAME);
@@ -240,6 +244,10 @@ describe('start OpenSearch Dashboards server', () => {
   it('redirects to an object ignores after hash', async () => {
     const startingPath = `/app/dashboards#/view/edf84fe0-e1a0-11e7-b6d5-4dc382ef7f5b`;
     const expectedPath = `/app/login?nextUrl=%2Fapp%2Fdashboards`;
+
+    const logout = await osdTestServer.request
+      .post(root, '/auth/logout')
+      .unset(AUTHORIZATION_HEADER_NAME);
 
     const response = await osdTestServer.request
       .get(root, startingPath)
