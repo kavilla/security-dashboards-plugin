@@ -27,6 +27,7 @@ jobs:
           chmod +x plugins/opensearch-security/tools/install_demo_configuration.sh
           yes | plugins/opensearch-security/tools/install_demo_configuration.sh
           echo "plugins.security.unsupported.restapi.allow_securityconfig_modification: true" >> /opensearch/config/opensearch.yml
+          echo /opensearch/config/opensearch.yml
           chown 1001:1001 -R /opensearch
           su -c "/opensearch/bin/opensearch" -s /bin/bash opensearch
           EOF
