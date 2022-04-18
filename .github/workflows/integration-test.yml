@@ -93,7 +93,7 @@ jobs:
       
       - name: Check OpenSearch Running
         continue-on-error: true
-        run: curl -XGET https://localhost:9200 -u 'admin:admin' -k
+        run: curl -XGET https://localhost:9200/ -u 'admin:admin' -k
 
       - name: Bootstrap OpenSearch Dashboards
         run: |
